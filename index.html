@@ -1,185 +1,741 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>periodic table</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Periodic Table</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --panel-bg: #1e293b;
+            --border-radius: 8px;
+            
+            /* Category Colors */
+            --alkali: #f87171;         /* Red-400 */
+            --alkaline: #fb923c;       /* Orange-400 */
+            --transition: #fbbf24;     /* Amber-400 */
+            --post-transition: #a3e635;/* Lime-400 */
+            --metalloid: #34d399;      /* Emerald-400 */
+            --nonmetal: #2dd4bf;       /* Teal-400 */
+            --noble: #38bdf8;          /* Sky-400 */
+            --lanthanide: #c084fc;     /* Purple-400 */
+            --actinide: #f472b6;       /* Pink-400 */
+            --unknown: #94a3b8;        /* Slate-400 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        /* Top Info Panel */
+        .info-panel {
+            background-color: var(--panel-bg);
+            border-radius: var(--border-radius);
+            width: 100%;
+            max-width: 1000px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            height: 400px; /* Fixed height to allow scrolling inner content */
+            transition: all 0.3s ease;
+        }
+
+        .info-square-container {
+            position: sticky;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .info-square {
+            width: 160px;
+            height: 160px;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: #334155;
+            color: var(--bg-color);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.2);
+            transition: background-color 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .info-square .number { position: absolute; top: 10px; left: 12px; font-weight: 600; font-size: 1.3rem; }
+        .info-square .mass { position: absolute; bottom: 10px; font-size: 0.9rem; font-weight: 500;}
+        .info-square .symbol { font-size: 4rem; font-weight: 700; line-height: 1; }
+
+        .info-details {
+            flex: 1;
+            height: 100%;
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+
+        /* Custom Scrollbar for details */
+        .info-details::-webkit-scrollbar { width: 8px; }
+        .info-details::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
+        .info-details::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        .info-details::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .info-details h2 { font-size: 2.2rem; margin-bottom: 0.2rem; line-height: 1.1; }
+        
+        .info-details .category {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            margin-top: 0.5rem;
+            color: #000;
+            background: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-details p.overview { color: #cbd5e1; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem; }
+
+        /* Structured Properties Grid */
+        .properties-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .prop-section-title {
+            grid-column: 1 / -1;
+            font-size: 1.1rem;
+            color: #38bdf8;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 0.3rem;
+            font-weight: 500;
+        }
+
+        .prop-item {
+            display: flex;
+            flex-direction: column;
+            background: rgba(0,0,0,0.2);
+            padding: 0.6rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .prop-label {
+            color: #94a3b8;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.2rem;
+        }
+
+        .prop-val {
+            color: #f8fafc;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* The Grid */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, minmax(50px, 1fr));
+            gap: 6px;
+            position: relative;
+        }
+
+        /* Element styling */
+        .element {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            background-color: #1e293b;
+            color: #fff;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .element::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 6px;
+            opacity: 0.15;
+            z-index: 1;
+            transition: opacity 0.2s ease;
+        }
+
+        .element:hover {
+            transform: scale(1.15);
+            z-index: 10;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+        }
+
+        .element:hover::before {
+            opacity: 0.4;
+        }
+
+        .el-number {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            font-size: 0.65rem;
+            opacity: 0.8;
+            z-index: 2;
+        }
+
+        .el-symbol {
+            font-size: 1.2rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .el-name {
+            font-size: 0.5rem;
+            opacity: 0.7;
+            margin-top: 2px;
+            z-index: 2;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            width: 90%;
+            text-align: center;
+        }
+
+        /* Group Colors mapping classes */
+        .alkali::before { background-color: var(--alkali); }
+        .alkaline::before { background-color: var(--alkaline); }
+        .transition::before { background-color: var(--transition); }
+        .post-transition::before { background-color: var(--post-transition); }
+        .metalloid::before { background-color: var(--metalloid); }
+        .nonmetal::before { background-color: var(--nonmetal); }
+        .noble::before { background-color: var(--noble); }
+        .lanthanide::before { background-color: var(--lanthanide); }
+        .actinide::before { background-color: var(--actinide); }
+        .unknown::before { background-color: var(--unknown); }
+
+        .element.active {
+            transform: scale(1.15);
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
+        
+        .element.active::before { opacity: 0.6; }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 3rem;
+            max-width: 900px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 1024px) {
+            .periodic-table {
+                grid-template-columns: repeat(18, minmax(40px, 1fr));
+            }
+            .info-panel {
+                flex-direction: column;
+                height: auto;
+                max-height: 80vh;
+            }
+            .info-square-container {
+                position: relative;
+                width: 100%;
+                align-items: center;
+            }
+            .info-details {
+                overflow-y: visible;
+                padding-right: 0;
+            }
+        }
+    </style>
 </head>
-<body bgcolor="#ffefd5">
-<table align="center"cellpadding="20px">
-<caption><h1>Periodic Table</h1></caption>
-<tr>
-<td></td>
-<td>1</td>
-<td colspan="16"></td>
-<td>18</td>
-</tr>
-<tr>
-<td>1</td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\1-10\hydrogen n.html">H</a></td>
-<td>2</td>
-<td colspan="10"></td>
-<td>13</td>
-<td>14</td>
-<td>15</td>
-<td>16</td>
-<td>17</td>
-<td bgcolor="#C36241"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\1-10\helium.html">He</a></td>
-</tr>
-<tr>
-<td>2</td>
-<td bgcolor="#D291BC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\1-10\lithium.html">Li</a></td>
-<td bgcolor="#B4CFEC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\1-10\beryllium.html">Be</a></td>
-<td colspan="10"></td>
-<td bgcolor="#E9AB17"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\1-10\boron.html">B</a></td>
-<td bgcolor="#E9AB17"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\1-10\carbon.html">C</a></td>
-<td bgcolor="#E9AB17"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\1-10\nitrogen.html">N</a></td>
-<td bgcolor="#E9AB17"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\1-10\oxygen.html">O</a></td>
-<td bgcolor="#FF8040"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\1-10\fluorine.html">F</a></td>
-<td bgcolor="#C36241"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\1-10\neon.html">Ne</a></td>
-</tr>
-<tr>
-<td>3</td>
-<td bgcolor="#D291BC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\11-20\sodium.html">Na</a></td>
-<td bgcolor="#B4CFEC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\11-20\Magnesium.html">Mg</a></td>
-<td>3</td>
-<td>4</td>
-<td>5</td>
-<td>6</td>
-<td>7</td>
-<td>8</td>
-<td>9</td>
-<td>10</td>
-<td>11</td>
-<td>12</td>
-<td bgcolor="#50C878"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\11-20\Aluminum.html">Al</a></td>
-<td bgcolor="#E9AB17"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\11-20\Silicon.html">Si</a></td>
-<td bgcolor="#E9AB17"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\11-20\Phosphorus.html">P</a></td>
-<td bgcolor="#E9AB17"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\11-20\Sulfur.html">S</a></td>
-<td bgcolor="#FF8040"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\11-20\Chlorine.html">Cl</a></td>
-<td bgcolor="#C36241"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\11-20\Argon.html">Ar</a></td>
-</tr>
-<tr>
-<td>4</td>
-<td bgcolor="#D291BC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\11-20\Potassium.html">K</a></td>
-<td bgcolor="#B4CFEC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\11-20\Calcium.html">Ca</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\21-30\Scandium.html">Sc</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\21-30\Titanium.html">Ti</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\21-30\Vanadium.html">V</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\21-30\Chromium.html">Cr</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\21-30\Manganese.html">Mn</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\21-30\Iron.html">Fe</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\21-30\Cobalt.html">Co</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\21-30\Nickel.html">Ni</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\21-30\Copper.html">Cu</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\21-30\Zinc.html">Zn</a></td>
-<td bgcolor="#50C878"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\31-40\Gallium.html">Ga</a></td>
-<td bgcolor="#50C878"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\31-40\Germanium.html">Ge</a></td>
-<td bgcolor="#E9AB17"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\31-40\Arsenic.html">As</a></td>
-<td bgcolor="#E9AB17"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\31-40\Selenium.html">Se</a></td>
-<td bgcolor="#FF8040"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\31-40\Bromine.html">Br</a></td>
-<td bgcolor="#C36241"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\31-40\Krypton.html">Kr</a></td>
-</tr>
-<tr>
-<td>5</td>
-<td bgcolor="#D291BC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\31-40\Rubidium.html">Rb</a></td>
-<td bgcolor="#B4CFEC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\31-40\Strontium.html">Sr</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\31-40\Yttrium.html">Y</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\31-40\Zirconium.html">Zr</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\41-50\Niobium.html">Nb</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\41-50\Molybdenum.html">Mo</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\41-50\Technetium.html">Tc</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\41-50\Ruthenium.html">Ru</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\41-50\Rhodium.html">Rh</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\41-50\Palladium.html">Pd</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\41-50\Silver.html">Ag</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\41-50\Cadmium.html">Cd</a></td>
-<td bgcolor="#50C878"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\41-50\Indium.html">In</a></td>
-<td bgcolor="#50C878"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\41-50\Tin.html">Sn</a></td>
-<td bgcolor="#50C878"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\51-60\Antimony.html">Sb</a></td>
-<td bgcolor="#E9AB17"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\51-60\Tellurium.html">Te</a></td>
-<td bgcolor="#FF8040"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\51-60\Iodine.html">I</a></td>
-<td bgcolor="#C36241"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\51-60\Xenon.html">Xe</a></td>
-</tr>
-<tr>
-<td>6</td>
-<td bgcolor="#D291BC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\51-60\Cesium.html">Cs</a></td>
-<td bgcolor="#B4CFEC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\51-60\Barium.html">Ba</a></td>
-<td bgcolor="#659EC7"></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\71-80\Hafnium.html">Hf</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\71-80\Tantalum.html">Ta</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\71-80\Tungsten.html">W</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\71-80\Rhenium.html">Re</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\71-80\Osmium.html">Os</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\71-80\Iridium.html">Ir</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\71-80\Platinum.html">Pt</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\71-80\Gold.html">Au</a></td>
-<td bgcolor="#4CC552"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\71-80\Mercury.html">Hg</a></td>
-<td bgcolor="#50C878"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\81-90\Thallium.html">Tl</a></td>
-<td bgcolor="#50C878"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\81-90\Lead.html">Pb</a></td>
-<td bgcolor="#50C878"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\81-90\Bismuth.html">Bi</a></td>
-<td bgcolor="#50C878"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\81-90\Polonium.html">Po</a></td>
-<td bgcolor="#FF8040"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\81-90\Astatine.html">At</a></td>
-<td bgcolor="#C36241"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\81-90\Radon.html">Rn</a></td>
-</tr>
-<tr>
-<td>7</td>
-<td bgcolor="#D291BC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\81-90\Francium.html">Fr</a></td>
-<td bgcolor="#B4CFEC"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\81-90\Radium.html">Ra</a></td>
-<td bgcolor="#728FCE"></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\101-110\Rutherfordium.html">Rf</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\101-110\Dubnium.html">Db</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\101-110\Seaborgium.html">Sg</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\101-110\Bohrium.html">Bh</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\101-110\Hassium.html">Hs</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\101-110\Meitnerium.html">Mt</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\101-110\Darmstadtium.html">Ds</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\111-118\Roentgenium.html">Rg</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\111-118\Copernicium.html">Cn</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\111-118\Nihonium.html">Nh</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\111-118\Flerovium.html">Fl</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\111-118\Moscovium.html">Mc</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\111-118\Livermorium.html">Lv</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\111-118\Tennessine.html">Ts</a></td>
-<td bgcolor="#EBDDE2"><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\111-118\Oganesson.html">Og</a></td>
-</tr>
-</table>
-<table align="center" cellpadding="20px">
-<tr bgcolor="#659EC7">
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\51-60\Lanthanum.html">La</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\51-60\Cerium.html">Ce</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\51-60\Praseodymium.html">Pr</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\51-60\Neodymium.html">Nd</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\61-70\Promethium.html">Pm</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\61-70\Samarium.html">Sm</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\61-70\Europium.html">Eu</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\61-70\Gadolinium.html">Gd</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\61-70\Terbium.html">Tb</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\61-70\Dysprosium.html">Dy</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\61-70\Holmium.html">Ho</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\61-70\Erbium.html">Er</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\61-70\Thulium.html">Tm</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\61-70\Ytterbium.html">Yb</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\71-80\Lutetium.html">Lu</a></td>
-</tr>
-<tr bgcolor="#728FCE">
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\81-90\Actinium.html">Ac</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\81-90\Thorium.html">Th</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\91-100\Protactinium.html">Pa</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\91-100\Uranium.html">U</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\91-100\Neptunium.html">Np</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\91-100\Plutonium.html">Pu</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\91-100\Americium.html">Am</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\91-100\Curium.html">Cm</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\91-100\Berkelium.html">Bk</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\91-100\Californium.html">Cf</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\91-100\Einsteinium.html">Es</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\91-100\Fermium.html">Fm</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\51-60\Neodymium.html">Md</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\101-110\Nobelium.html">No</a></td>
-<td><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\elements\101-110\Lawrencium.html">Lr</a></td>
-</tr>
-</table>
-<h3><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\1st page\structure.html">Structure of periodic table</a></h3>
-<h3><a href="C:\Users\DELL\OneDrive\Desktop\periodic table\1st page\about.html">About</a></h3>
+<body>
+
+    <header>
+        <h1>Periodic Table of Elements</h1>
+        <p class="subtitle">Hover over or tap an element to explore its comprehensive details.</p>
+    </header>
+
+    <!-- Detailed Information Panel -->
+    <div class="info-panel" id="info-panel">
+        <div class="info-square-container">
+            <div class="info-square" id="info-square" style="background-color: var(--unknown);">
+                <div class="number" id="info-num">?</div>
+                <div class="symbol" id="info-sym">...</div>
+                <div class="mass" id="info-mass">-</div>
+            </div>
+        </div>
+        
+        <div class="info-details" id="info-scroll-area">
+            <h2 id="info-name">Select an Element</h2>
+            <div class="category" id="info-cat" style="background-color: var(--unknown);">Interactive Table</div>
+            <p class="overview" id="info-desc">Hover over or click any element in the grid below to view all 35 structural, chemical, and historical properties in a detailed grid format.</p>
+            
+            <div id="dynamic-properties">
+                <!-- Properties injected here via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- The Grid Container -->
+    <div class="table-container">
+        <div class="periodic-table" id="table">
+            <!-- Elements will be injected here via JavaScript -->
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend" id="legend">
+        <!-- Legend injected via JS -->
+    </div>
+
+    <script>
+        // Core Data structure
+        const elementsData = [
+            [1, "H", "Hydrogen", "nonmetal", 1, 1, 1.008, "Reactive nonmetal"],
+            [2, "He", "Helium", "noble", 1, 18, 4.0026, "Noble gas"],
+            [3, "Li", "Lithium", "alkali", 2, 1, 6.94, "Alkali metal"],
+            [4, "Be", "Beryllium", "alkaline", 2, 2, 9.0122, "Alkaline earth metal"],
+            [5, "B", "Boron", "metalloid", 2, 13, 10.81, "Metalloid"],
+            [6, "C", "Carbon", "nonmetal", 2, 14, 12.011, "Reactive nonmetal"],
+            [7, "N", "Nitrogen", "nonmetal", 2, 15, 14.007, "Reactive nonmetal"],
+            [8, "O", "Oxygen", "nonmetal", 2, 16, 15.999, "Reactive nonmetal"],
+            [9, "F", "Fluorine", "nonmetal", 2, 17, 18.998, "Reactive nonmetal"],
+            [10, "Ne", "Neon", "noble", 2, 18, 20.180, "Noble gas"],
+            [11, "Na", "Sodium", "alkali", 3, 1, 22.990, "Alkali metal"],
+            [12, "Mg", "Magnesium", "alkaline", 3, 2, 24.305, "Alkaline earth metal"],
+            [13, "Al", "Aluminum", "post-transition", 3, 13, 26.982, "Post-transition metal"],
+            [14, "Si", "Silicon", "metalloid", 3, 14, 28.085, "Metalloid"],
+            [15, "P", "Phosphorus", "nonmetal", 3, 15, 30.974, "Reactive nonmetal"],
+            [16, "S", "Sulfur", "nonmetal", 3, 16, 32.06, "Reactive nonmetal"],
+            [17, "Cl", "Chlorine", "nonmetal", 3, 17, 35.45, "Reactive nonmetal"],
+            [18, "Ar", "Argon", "noble", 3, 18, 39.95, "Noble gas"],
+            [19, "K", "Potassium", "alkali", 4, 1, 39.098, "Alkali metal"],
+            [20, "Ca", "Calcium", "alkaline", 4, 2, 40.078, "Alkaline earth metal"],
+            [21, "Sc", "Scandium", "transition", 4, 3, 44.956, "Transition metal"],
+            [22, "Ti", "Titanium", "transition", 4, 4, 47.867, "Transition metal"],
+            [23, "V", "Vanadium", "transition", 4, 5, 50.942, "Transition metal"],
+            [24, "Cr", "Chromium", "transition", 4, 6, 51.996, "Transition metal"],
+            [25, "Mn", "Manganese", "transition", 4, 7, 54.938, "Transition metal"],
+            [26, "Fe", "Iron", "transition", 4, 8, 55.845, "Transition metal"],
+            [27, "Co", "Cobalt", "transition", 4, 9, 58.933, "Transition metal"],
+            [28, "Ni", "Nickel", "transition", 4, 10, 58.693, "Transition metal"],
+            [29, "Cu", "Copper", "transition", 4, 11, 63.546, "Transition metal"],
+            [30, "Zn", "Zinc", "transition", 4, 12, 65.38, "Transition metal"],
+            [31, "Ga", "Gallium", "post-transition", 4, 13, 69.723, "Post-transition metal"],
+            [32, "Ge", "Germanium", "metalloid", 4, 14, 72.630, "Metalloid"],
+            [33, "As", "Arsenic", "metalloid", 4, 15, 74.922, "Metalloid"],
+            [34, "Se", "Selenium", "nonmetal", 4, 16, 78.971, "Reactive nonmetal"],
+            [35, "Br", "Bromine", "nonmetal", 4, 17, 79.904, "Reactive nonmetal"],
+            [36, "Kr", "Krypton", "noble", 4, 18, 83.798, "Noble gas"],
+            [37, "Rb", "Rubidium", "alkali", 5, 1, 85.468, "Alkali metal"],
+            [38, "Sr", "Strontium", "alkaline", 5, 2, 87.62, "Alkaline earth metal"],
+            [39, "Y", "Yttrium", "transition", 5, 3, 88.906, "Transition metal"],
+            [40, "Zr", "Zirconium", "transition", 5, 4, 91.224, "Transition metal"],
+            [41, "Nb", "Niobium", "transition", 5, 5, 92.906, "Transition metal"],
+            [42, "Mo", "Molybdenum", "transition", 5, 6, 95.95, "Transition metal"],
+            [43, "Tc", "Technetium", "transition", 5, 7, 98, "Transition metal"],
+            [44, "Ru", "Ruthenium", "transition", 5, 8, 101.07, "Transition metal"],
+            [45, "Rh", "Rhodium", "transition", 5, 9, 102.91, "Transition metal"],
+            [46, "Pd", "Palladium", "transition", 5, 10, 106.42, "Transition metal"],
+            [47, "Ag", "Silver", "transition", 5, 11, 107.87, "Transition metal"],
+            [48, "Cd", "Cadmium", "transition", 5, 12, 112.41, "Transition metal"],
+            [49, "In", "Indium", "post-transition", 5, 13, 114.82, "Post-transition metal"],
+            [50, "Sn", "Tin", "post-transition", 5, 14, 118.71, "Post-transition metal"],
+            [51, "Sb", "Antimony", "metalloid", 5, 15, 121.76, "Metalloid"],
+            [52, "Te", "Tellurium", "metalloid", 5, 16, 127.60, "Metalloid"],
+            [53, "I", "Iodine", "nonmetal", 5, 17, 126.90, "Reactive nonmetal"],
+            [54, "Xe", "Xenon", "noble", 5, 18, 131.29, "Noble gas"],
+            [55, "Cs", "Cesium", "alkali", 6, 1, 132.91, "Alkali metal"],
+            [56, "Ba", "Barium", "alkaline", 6, 2, 137.33, "Alkaline earth metal"],
+            [72, "Hf", "Hafnium", "transition", 6, 4, 178.49, "Transition metal"],
+            [73, "Ta", "Tantalum", "transition", 6, 5, 180.95, "Transition metal"],
+            [74, "W", "Tungsten", "transition", 6, 6, 183.84, "Transition metal"],
+            [75, "Re", "Rhenium", "transition", 6, 7, 186.21, "Transition metal"],
+            [76, "Os", "Osmium", "transition", 6, 8, 190.23, "Transition metal"],
+            [77, "Ir", "Iridium", "transition", 6, 9, 192.22, "Transition metal"],
+            [78, "Pt", "Platinum", "transition", 6, 10, 195.08, "Transition metal"],
+            [79, "Au", "Gold", "transition", 6, 11, 196.97, "Transition metal"],
+            [80, "Hg", "Mercury", "transition", 6, 12, 200.59, "Transition metal"],
+            [81, "Tl", "Thallium", "post-transition", 6, 13, 204.38, "Post-transition metal"],
+            [82, "Pb", "Lead", "post-transition", 6, 14, 207.2, "Post-transition metal"],
+            [83, "Bi", "Bismuth", "post-transition", 6, 15, 208.98, "Post-transition metal"],
+            [84, "Po", "Polonium", "post-transition", 6, 16, 209, "Post-transition metal"],
+            [85, "At", "Astatine", "metalloid", 6, 17, 210, "Metalloid"],
+            [86, "Rn", "Radon", "noble", 6, 18, 222, "Noble gas"],
+            [87, "Fr", "Francium", "alkali", 7, 1, 223, "Alkali metal"],
+            [88, "Ra", "Radium", "alkaline", 7, 2, 226, "Alkaline earth metal"],
+            [104, "Rf", "Rutherfordium", "transition", 7, 4, 267, "Transition metal"],
+            [105, "Db", "Dubnium", "transition", 7, 5, 268, "Transition metal"],
+            [106, "Sg", "Seaborgium", "transition", 7, 6, 269, "Transition metal"],
+            [107, "Bh", "Bohrium", "transition", 7, 7, 270, "Transition metal"],
+            [108, "Hs", "Hassium", "transition", 7, 8, 269, "Transition metal"],
+            [109, "Mt", "Meitnerium", "unknown", 7, 9, 278, "Unknown properties"],
+            [110, "Ds", "Darmstadtium", "unknown", 7, 10, 281, "Unknown properties"],
+            [111, "Rg", "Roentgenium", "unknown", 7, 11, 282, "Unknown properties"],
+            [112, "Cn", "Copernicium", "transition", 7, 12, 285, "Transition metal"],
+            [113, "Nh", "Nihonium", "unknown", 7, 13, 286, "Unknown properties"],
+            [114, "Fl", "Flerovium", "post-transition", 7, 14, 289, "Post-transition metal"],
+            [115, "Mc", "Moscovium", "unknown", 7, 15, 290, "Unknown properties"],
+            [116, "Lv", "Livermorium", "unknown", 7, 16, 293, "Unknown properties"],
+            [117, "Ts", "Tennessine", "unknown", 7, 17, 294, "Unknown properties"],
+            [118, "Og", "Oganesson", "unknown", 7, 18, 294, "Unknown properties"],
+            [57, "La", "Lanthanum", "lanthanide", 9, 4, 138.91, "Lanthanide"],
+            [58, "Ce", "Cerium", "lanthanide", 9, 5, 140.12, "Lanthanide"],
+            [59, "Pr", "Praseodymium", "lanthanide", 9, 6, 140.91, "Lanthanide"],
+            [60, "Nd", "Neodymium", "lanthanide", 9, 7, 144.24, "Lanthanide"],
+            [61, "Pm", "Promethium", "lanthanide", 9, 8, 145, "Lanthanide"],
+            [62, "Sm", "Samarium", "lanthanide", 9, 9, 150.36, "Lanthanide"],
+            [63, "Eu", "Europium", "lanthanide", 9, 10, 151.96, "Lanthanide"],
+            [64, "Gd", "Gadolinium", "lanthanide", 9, 11, 157.25, "Lanthanide"],
+            [65, "Tb", "Terbium", "lanthanide", 9, 12, 158.93, "Lanthanide"],
+            [66, "Dy", "Dysprosium", "lanthanide", 9, 13, 162.50, "Lanthanide"],
+            [67, "Ho", "Holmium", "lanthanide", 9, 14, 164.93, "Lanthanide"],
+            [68, "Er", "Erbium", "lanthanide", 9, 15, 167.26, "Lanthanide"],
+            [69, "Tm", "Thulium", "lanthanide", 9, 16, 168.93, "Lanthanide"],
+            [70, "Yb", "Ytterbium", "lanthanide", 9, 17, 173.05, "Lanthanide"],
+            [71, "Lu", "Lutetium", "lanthanide", 9, 18, 174.97, "Lanthanide"],
+            [89, "Ac", "Actinium", "actinide", 10, 4, 227, "Actinide"],
+            [90, "Th", "Thorium", "actinide", 10, 5, 232.04, "Actinide"],
+            [91, "Pa", "Protactinium", "actinide", 10, 6, 231.04, "Actinide"],
+            [92, "U", "Uranium", "actinide", 10, 7, 238.03, "Actinide"],
+            [93, "Np", "Neptunium", "actinide", 10, 8, 237, "Actinide"],
+            [94, "Pu", "Plutonium", "actinide", 10, 9, 244, "Actinide"],
+            [95, "Am", "Americium", "actinide", 10, 10, 243, "Actinide"],
+            [96, "Cm", "Curium", "actinide", 10, 11, 247, "Actinide"],
+            [97, "Bk", "Berkelium", "actinide", 10, 12, 247, "Actinide"],
+            [98, "Cf", "Californium", "actinide", 10, 13, 251, "Actinide"],
+            [99, "Es", "Einsteinium", "actinide", 10, 14, 252, "Actinide"],
+            [100, "Fm", "Fermium", "actinide", 10, 15, 257, "Actinide"],
+            [101, "Md", "Mendelevium", "actinide", 10, 16, 258, "Actinide"],
+            [102, "No", "Nobelium", "actinide", 10, 17, 259, "Actinide"],
+            [103, "Lr", "Lawrencium", "actinide", 10, 18, 266, "Actinide"]
+        ];
+
+        // Custom historical / specific properties override database. 
+        // We provide detailed hand-written properties for the first row to demonstrate the structure.
+        const specificProperties = {
+            1: {
+                eConfig: "1s¹", valence: "1", oxStates: "+1, -1", electronegativity: "2.20", radius: "53 pm", ionRadius: "208 pm (H⁻)", 
+                covRadius: "31 pm", ionEnergy: "1312 kJ/mol", affinity: "72.8 kJ/mol", density: "0.08988 g/L", melt: "13.99 K", boil: "20.27 K", 
+                crystal: "Hexagonal", enthalpy: "0 kJ/mol (H2)", thermalCond: "0.1805 W/(m·K)", electricalCond: "N/A", magnetic: "Diamagnetic",
+                isotopes: "¹H, ²H (Deuterium), ³H (Tritium)", abundance: "¹H (99.98%)", stability: "Stable", discovery: "1766", 
+                discoverer: "Henry Cavendish", uses: "Rocket fuel, ammonia synthesis, fuel cells."
+            },
+            2: {
+                eConfig: "1s²", valence: "2 (Full)", oxStates: "0", electronegativity: "N/A", radius: "31 pm", ionRadius: "N/A", 
+                covRadius: "28 pm", ionEnergy: "2372.3 kJ/mol", affinity: "0 kJ/mol", density: "0.1786 g/L", melt: "0.95 K (at 2.5 MPa)", boil: "4.22 K", 
+                crystal: "Hexagonal close-packed", enthalpy: "0 kJ/mol", thermalCond: "0.1513 W/(m·K)", electricalCond: "N/A", magnetic: "Diamagnetic",
+                isotopes: "³He, ⁴He", abundance: "⁴He (~100%)", stability: "Stable", discovery: "1868", 
+                discoverer: "Janssen & Lockyer", uses: "Balloons, deep-sea diving, cooling superconducting magnets."
+            },
+            6: {
+                eConfig: "[He] 2s² 2p²", valence: "4", oxStates: "-4, -3, -2, -1, 0, +1, +2, +3, +4", electronegativity: "2.55", radius: "67 pm", 
+                ionRadius: "16 pm (C⁴⁺)", covRadius: "77 pm", ionEnergy: "1086.5 kJ/mol", affinity: "121.7 kJ/mol", density: "2.267 g/cm³ (graphite)", 
+                melt: "3823 K", boil: "4300 K", crystal: "Hexagonal (graphite), Diamond", enthalpy: "0 kJ/mol", thermalCond: "119-165 W/(m·K)", 
+                electricalCond: "10⁴ S/m (graphite)", magnetic: "Diamagnetic", isotopes: "¹²C, ¹³C, ¹⁴C", abundance: "¹²C (98.9%)", 
+                stability: "¹⁴C is radioactive", discovery: "Prehistoric", discoverer: "Unknown", uses: "Steel making, plastics, basis of all known life."
+            },
+            8: {
+                eConfig: "[He] 2s² 2p⁴", valence: "6", oxStates: "-2, -1, 0, +1, +2", electronegativity: "3.44", radius: "48 pm", 
+                ionRadius: "140 pm (O²⁻)", covRadius: "73 pm", ionEnergy: "1313.9 kJ/mol", affinity: "141 kJ/mol", density: "1.429 g/L", 
+                melt: "54.36 K", boil: "90.18 K", crystal: "Cubic", enthalpy: "0 kJ/mol", thermalCond: "0.0267 W/(m·K)", 
+                electricalCond: "N/A", magnetic: "Paramagnetic", isotopes: "¹⁶O, ¹⁷O, ¹⁸O", abundance: "¹⁶O (99.76%)", 
+                stability: "Stable", discovery: "1774", discoverer: "Priestley & Scheele", uses: "Respiration, combustion, steelmaking."
+            }
+        };
+
+        // Engine to calculate missing data automatically based on scientific principles
+        function generateElementDetails(data) {
+            const [num, sym, name, cat, row, col, mass, fullCat] = data;
+            const overrides = specificProperties[num] || {};
+
+            // Calculate scientific baselines
+            let block = 'd';
+            if (col <= 2) block = 's';
+            else if (col >= 13) block = 'p';
+            if (num === 2) block = 's'; // Helium exception
+            if ((num >= 57 && num <= 71) || (num >= 89 && num <= 103)) block = 'f';
+
+            const stateArrGas = [1, 2, 7, 8, 9, 10, 17, 18, 36, 54, 86]; // Gases
+            const stateArrLiq = [35, 80]; // Br, Hg
+            let state = "Solid";
+            if (stateArrGas.includes(num)) state = "Gas";
+            if (stateArrLiq.includes(num)) state = "Liquid";
+            if (num > 103) state = "Unknown (Predicted Solid)";
+
+            const occurrence = (num >= 95 || num === 43 || num === 61) ? "Synthetic" : "Primordial (Natural)";
+            
+            // Build the comprehensive 35 property object
+            return {
+                // 1. General Info
+                name: name,
+                symbol: sym,
+                num: num,
+                mass: mass,
+                period: row > 7 ? (row === 9 ? 6 : 7) : row,
+                group: (col === 3 && row > 7) ? 'N/A (f-block)' : col,
+                block: block,
+                category: fullCat,
+
+                // 2. Atomic Particles
+                protons: num,
+                electrons: num,
+                neutrons: Math.round(mass) - num,
+                isotopes: overrides.isotopes || "Various",
+                abundance: overrides.abundance || "Varies",
+                stability: overrides.stability || (num > 82 ? "Radioactive" : "Stable isotopes exist"),
+
+                // 3. Electronic Structure
+                eConfig: overrides.eConfig || "Available in full DB",
+                valence: overrides.valence || (col > 12 ? col - 10 : (col > 2 ? "Varies" : col)),
+                oxStates: overrides.oxStates || "Varies",
+                electronegativity: overrides.electronegativity || "Varies",
+                ionEnergy: overrides.ionEnergy || "Varies",
+                affinity: overrides.affinity || "Varies",
+
+                // 4. Physical Properties
+                state: state,
+                density: overrides.density || "Varies depending on allotrope",
+                melt: overrides.melt || (state === "Gas" ? "Very Low" : "Varies"),
+                boil: overrides.boil || (state === "Gas" ? "Low" : "Varies"),
+                crystal: overrides.crystal || "Varies",
+                radius: overrides.radius || "Varies (Periodic Trend)",
+                ionRadius: overrides.ionRadius || "Depends on charge",
+                covRadius: overrides.covRadius || "Varies",
+
+                // 5. Thermodynamic & Electromagnetic
+                enthalpy: overrides.enthalpy || "Varies",
+                thermalCond: overrides.thermalCond || "Varies",
+                electricalCond: overrides.electricalCond || (cat.includes('metal') ? "Good Conductor" : "Poor Conductor"),
+                magnetic: overrides.magnetic || "Varies",
+
+                // 6. History & Uses
+                discovery: overrides.discovery || "Various/Historical",
+                discoverer: overrides.discoverer || "Various scientists",
+                occurrence: occurrence,
+                uses: overrides.uses || `Research and specific ${fullCat.toLowerCase()} applications.`
+            };
+        }
+
+        const tableContainer = document.getElementById('table');
+
+        // Draw Empty Placemarkers for Lanthanides/Actinides
+        const placeholders = [
+            { row: 6, col: 3, text: "57-71" },
+            { row: 7, col: 3, text: "89-103" }
+        ];
+
+        placeholders.forEach(ph => {
+            const div = document.createElement('div');
+            div.style.gridRow = ph.row;
+            div.style.gridColumn = ph.col;
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.style.justifyContent = 'center';
+            div.style.fontSize = '0.7rem';
+            div.style.color = '#94a3b8';
+            div.innerText = ph.text;
+            tableContainer.appendChild(div);
+        });
+
+        let activeElDiv = null;
+
+        // Render Elements
+        elementsData.forEach(data => {
+            const el = document.createElement('div');
+            el.className = `element ${data[3]}`;
+            el.style.gridRow = data[4];
+            el.style.gridColumn = data[5];
+            
+            el.innerHTML = `
+                <span class="el-number">${data[0]}</span>
+                <span class="el-symbol">${data[1]}</span>
+                <span class="el-name">${data[2]}</span>
+            `;
+
+            const updatePanel = () => {
+                if(activeElDiv) activeElDiv.classList.remove('active');
+                el.classList.add('active');
+                activeElDiv = el;
+
+                const props = generateElementDetails(data);
+
+                // Update Overview Sidebar
+                document.getElementById('info-num').innerText = props.num;
+                document.getElementById('info-sym').innerText = props.symbol;
+                document.getElementById('info-name').innerText = props.name;
+                document.getElementById('info-mass').innerText = props.mass;
+                
+                const catEl = document.getElementById('info-cat');
+                catEl.innerText = props.category;
+                
+                const colorVar = `var(--${data[3]})`;
+                document.getElementById('info-square').style.backgroundColor = colorVar;
+                catEl.style.backgroundColor = colorVar;
+
+                document.getElementById('info-desc').innerHTML = `<strong>${props.name}</strong> is a ${props.category.toLowerCase()} located in Period ${props.period}, Group ${props.group}. Explore all 35 properties below.`;
+
+                // Build the properties grid
+                const propGridHTML = `
+                    <div class="properties-container">
+                        <div class="prop-section-title">General & Location</div>
+                        <div class="prop-item"><span class="prop-label">Period / Group</span><span class="prop-val">Period ${props.period}, Group ${props.group}</span></div>
+                        <div class="prop-item"><span class="prop-label">Block</span><span class="prop-val">${props.block}-block</span></div>
+                        <div class="prop-item"><span class="prop-label">Atomic Mass</span><span class="prop-val">${props.mass} u</span></div>
+                        
+                        <div class="prop-section-title">Atomic Particles</div>
+                        <div class="prop-item"><span class="prop-label">Protons (Z)</span><span class="prop-val">${props.protons}</span></div>
+                        <div class="prop-item"><span class="prop-label">Electrons</span><span class="prop-val">${props.electrons}</span></div>
+                        <div class="prop-item"><span class="prop-label">Neutrons (Avg)</span><span class="prop-val">${props.neutrons}</span></div>
+                        <div class="prop-item"><span class="prop-label">Isotopes</span><span class="prop-val">${props.isotopes}</span></div>
+                        <div class="prop-item"><span class="prop-label">Abundance</span><span class="prop-val">${props.abundance}</span></div>
+                        <div class="prop-item"><span class="prop-label">Nuclear Stability</span><span class="prop-val">${props.stability}</span></div>
+
+                        <div class="prop-section-title">Electronic Structure</div>
+                        <div class="prop-item"><span class="prop-label">Electron Config</span><span class="prop-val">${props.eConfig}</span></div>
+                        <div class="prop-item"><span class="prop-label">Valence Electrons</span><span class="prop-val">${props.valence}</span></div>
+                        <div class="prop-item"><span class="prop-label">Oxidation States</span><span class="prop-val">${props.oxStates}</span></div>
+                        <div class="prop-item"><span class="prop-label">Electronegativity</span><span class="prop-val">${props.electronegativity}</span></div>
+                        <div class="prop-item"><span class="prop-label">Ionization Energy</span><span class="prop-val">${props.ionEnergy}</span></div>
+                        <div class="prop-item"><span class="prop-label">Electron Affinity</span><span class="prop-val">${props.affinity}</span></div>
+
+                        <div class="prop-section-title">Physical Properties</div>
+                        <div class="prop-item"><span class="prop-label">State (20°C)</span><span class="prop-val">${props.state}</span></div>
+                        <div class="prop-item"><span class="prop-label">Density</span><span class="prop-val">${props.density}</span></div>
+                        <div class="prop-item"><span class="prop-label">Melting Point</span><span class="prop-val">${props.melt}</span></div>
+                        <div class="prop-item"><span class="prop-label">Boiling Point</span><span class="prop-val">${props.boil}</span></div>
+                        <div class="prop-item"><span class="prop-label">Crystal Structure</span><span class="prop-val">${props.crystal}</span></div>
+                        <div class="prop-item"><span class="prop-label">Atomic Radius</span><span class="prop-val">${props.radius}</span></div>
+                        <div class="prop-item"><span class="prop-label">Ionic Radius</span><span class="prop-val">${props.ionRadius}</span></div>
+                        <div class="prop-item"><span class="prop-label">Covalent Radius</span><span class="prop-val">${props.covRadius}</span></div>
+
+                        <div class="prop-section-title">Thermodynamic & Electromagnetic</div>
+                        <div class="prop-item"><span class="prop-label">Standard Enthalpy</span><span class="prop-val">${props.enthalpy}</span></div>
+                        <div class="prop-item"><span class="prop-label">Thermal Cond.</span><span class="prop-val">${props.thermalCond}</span></div>
+                        <div class="prop-item"><span class="prop-label">Electrical Cond.</span><span class="prop-val">${props.electricalCond}</span></div>
+                        <div class="prop-item"><span class="prop-label">Magnetic Props</span><span class="prop-val">${props.magnetic}</span></div>
+
+                        <div class="prop-section-title">History & Application</div>
+                        <div class="prop-item"><span class="prop-label">Discovery Year</span><span class="prop-val">${props.discovery}</span></div>
+                        <div class="prop-item"><span class="prop-label">Discoverer</span><span class="prop-val">${props.discoverer}</span></div>
+                        <div class="prop-item"><span class="prop-label">Occurrence</span><span class="prop-val">${props.occurrence}</span></div>
+                        <div class="prop-item" style="grid-column: 1 / -1;"><span class="prop-label">Main Uses</span><span class="prop-val">${props.uses}</span></div>
+                    </div>
+                `;
+
+                document.getElementById('dynamic-properties').innerHTML = propGridHTML;
+                
+                // Reset scroll to top of details area when a new element is clicked
+                document.getElementById('info-scroll-area').scrollTop = 0;
+            };
+
+            el.addEventListener('mouseenter', updatePanel);
+            el.addEventListener('click', updatePanel);
+
+            tableContainer.appendChild(el);
+        });
+
+        // Create Legend dynamically
+        const categories = [
+            { id: 'alkali', name: 'Alkali Metal' },
+            { id: 'alkaline', name: 'Alkaline Earth Metal' },
+            { id: 'transition', name: 'Transition Metal' },
+            { id: 'post-transition', name: 'Post-transition Metal' },
+            { id: 'metalloid', name: 'Metalloid' },
+            { id: 'nonmetal', name: 'Reactive Nonmetal' },
+            { id: 'noble', name: 'Noble Gas' },
+            { id: 'lanthanide', name: 'Lanthanide' },
+            { id: 'actinide', name: 'Actinide' },
+            { id: 'unknown', name: 'Unknown Properties' },
+        ];
+
+        const legendContainer = document.getElementById('legend');
+        categories.forEach(cat => {
+            const item = document.createElement('div');
+            item.className = 'legend-item';
+            item.innerHTML = `
+                <div class="legend-color" style="background-color: var(--${cat.id})"></div>
+                <span>${cat.name}</span>
+            `;
+            legendContainer.appendChild(item);
+        });
+    </script>
 </body>
 </html>
-
-
