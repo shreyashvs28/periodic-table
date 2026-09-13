@@ -198,7 +198,7 @@ The actual structure may vary depending on the project's technology and architec
 ## 📥 Installation
 ``` 
 1. Clone the Repository
-git clone https://github.com/your-username/periodic-table.git
+git clone https://github.com/shreyashvs28/periodic-table.git
 2. Navigate to the Project Directory
 cd periodic-table
 3. Install Dependencies
