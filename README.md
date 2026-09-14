@@ -133,20 +133,7 @@ HTML5
 CSS3
 JavaScript
 Framework
-
-If applicable:
-
-React.js
-Next.js
-Vue.js
-Styling
-CSS
-Tailwind CSS
-Bootstrap
 Data
-
-Element data can be stored using:
-
 JSON
 JavaScript objects
 Local data files
